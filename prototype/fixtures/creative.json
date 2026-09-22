@@ -1,0 +1,117 @@
+{
+  "scenario": "creative",
+  "recorded_at": "2026-09-22T03:10:07.320Z",
+  "model": "jev-latest",
+  "changes": 5,
+  "questions": 19,
+  "state_bytes": 6866,
+  "request_bytes": 16627,
+  "latency_ms": 176,
+  "usage": {
+    "input_tokens": 6031,
+    "output_tokens": 478
+  },
+  "response": {
+    "model": "jev-1.13.0",
+    "answers": {
+      "material__0": {
+        "type": "noul",
+        "noul": 0.29
+      },
+      "material__1": {
+        "type": "noul",
+        "noul": 0.1
+      },
+      "material__2": {
+        "type": "noul",
+        "noul": 0.94
+      },
+      "material__3": {
+        "type": "noul",
+        "noul": 0.06
+      },
+      "material__4": {
+        "type": "noul",
+        "noul": 0.15
+      },
+      "theme": {
+        "type": "choice",
+        "choice": "creative",
+        "confidence": 1,
+        "probabilities": {
+          "compliance": 0,
+          "budget": 0,
+          "creative": 1,
+          "integration": 0,
+          "schedule": 0,
+          "metadata": 0,
+          "targeting": 0
+        }
+      },
+      "blast_radius": {
+        "type": "choice",
+        "choice": "external_platforms",
+        "confidence": 0.14,
+        "probabilities": {
+          "external_platforms": 0.31,
+          "none": 0.13,
+          "this_record": 0.27,
+          "downstream_consumers": 0.29,
+          "full_relaunch": 0
+        }
+      },
+      "safe_while_live": {
+        "type": "noul",
+        "noul": 0.44
+      },
+      "invalidates_approval": {
+        "type": "noul",
+        "noul": 0.76
+      },
+      "consent_conflict": {
+        "type": "noul",
+        "noul": 0.2
+      },
+      "claim_risk": {
+        "type": "noul",
+        "noul": 0.98
+      },
+      "op__resync_ad_budgets": {
+        "type": "noul",
+        "noul": 0.07
+      },
+      "op__legal_recheck": {
+        "type": "noul",
+        "noul": 0.96
+      },
+      "op__rebuild_audience": {
+        "type": "noul",
+        "noul": 0.06
+      },
+      "op__crm_sync": {
+        "type": "noul",
+        "noul": 0.24
+      },
+      "op__regenerate_utm": {
+        "type": "noul",
+        "noul": 0.9
+      },
+      "op__recompute_forecast": {
+        "type": "noul",
+        "noul": 0.12
+      },
+      "op__finance_approval": {
+        "type": "noul",
+        "noul": 0.07
+      },
+      "op__invalidate_gdpr": {
+        "type": "noul",
+        "noul": 0.14
+      }
+    },
+    "usage": {
+      "input_tokens": 6031,
+      "output_tokens": 478
+    }
+  }
+}

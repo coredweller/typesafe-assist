@@ -1,0 +1,26 @@
+{
+  "name": "jev-diff-prototype",
+  "version": "0.1.0",
+  "exports": "./server.ts",
+  "tasks": {
+    "dev": "deno run -A --env-file=.env server.ts",
+    "scenarios": "deno run -A --env-file=.env tools/run-scenarios.ts",
+    "scale": "deno run -A --env-file=.env tools/scale-test.ts",
+    "shoot": "deno run -A tools/shoot.ts",
+    "check": "deno check server.ts src/main.ts tools/run-scenarios.ts tools/scale-test.ts tools/shoot.ts",
+    "fmt": "deno fmt server.ts src/",
+    "bundle": "deno bundle --platform browser --format esm src/main.ts -o dist/app.js"
+  },
+  "imports": {
+    "@std/media-types": "jsr:@std/media-types@1",
+    "@std/path": "jsr:@std/path@1"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window", "dom", "dom.iterable", "esnext"],
+    "strict": true,
+    "noUncheckedIndexedAccess": false
+  },
+  "fmt": {
+    "lineWidth": 90
+  }
+}

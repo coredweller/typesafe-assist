@@ -1,0 +1,165 @@
+{
+  "scenario": "schedule",
+  "recorded_at": "2026-09-22T03:10:07.498Z",
+  "model": "jev-latest",
+  "changes": 8,
+  "questions": 25,
+  "state_bytes": 6763,
+  "request_bytes": 19775,
+  "latency_ms": 166,
+  "usage": {
+    "input_tokens": 7232,
+    "output_tokens": 685
+  },
+  "response": {
+    "model": "jev-1.13.0",
+    "answers": {
+      "material__0": {
+        "type": "noul",
+        "noul": 0.96
+      },
+      "material__1": {
+        "type": "noul",
+        "noul": 0.96
+      },
+      "material__2": {
+        "type": "noul",
+        "noul": 0.96
+      },
+      "material__3": {
+        "type": "noul",
+        "noul": 0.95
+      },
+      "material__4": {
+        "type": "noul",
+        "noul": 0.87
+      },
+      "material__5": {
+        "type": "noul",
+        "noul": 0.93
+      },
+      "material__6": {
+        "type": "noul",
+        "noul": 0.95
+      },
+      "material__7": {
+        "type": "noul",
+        "noul": 0.76
+      },
+      "identity__0": {
+        "type": "choice",
+        "choice": "1",
+        "confidence": 0.99,
+        "probabilities": {
+          "0": 0.01,
+          "1": 0.99,
+          "2": 0,
+          "3": 0,
+          "none": 0
+        }
+      },
+      "identity__1": {
+        "type": "choice",
+        "choice": "2",
+        "confidence": 0.97,
+        "probabilities": {
+          "0": 0,
+          "1": 0.02,
+          "2": 0.98,
+          "3": 0,
+          "none": 0
+        }
+      },
+      "identity__2": {
+        "type": "choice",
+        "choice": "3",
+        "confidence": 0.91,
+        "probabilities": {
+          "0": 0,
+          "1": 0,
+          "2": 0.07,
+          "3": 0.93,
+          "none": 0
+        }
+      },
+      "theme": {
+        "type": "choice",
+        "choice": "schedule",
+        "confidence": 1,
+        "probabilities": {
+          "compliance": 0,
+          "targeting": 0,
+          "schedule": 1,
+          "metadata": 0,
+          "budget": 0,
+          "integration": 0,
+          "creative": 0
+        }
+      },
+      "blast_radius": {
+        "type": "choice",
+        "choice": "external_platforms",
+        "confidence": 0.4,
+        "probabilities": {
+          "none": 0.02,
+          "external_platforms": 0.52,
+          "downstream_consumers": 0.32,
+          "full_relaunch": 0,
+          "this_record": 0.14
+        }
+      },
+      "safe_while_live": {
+        "type": "noul",
+        "noul": 0.85
+      },
+      "invalidates_approval": {
+        "type": "noul",
+        "noul": 0.24
+      },
+      "consent_conflict": {
+        "type": "noul",
+        "noul": 0.21
+      },
+      "claim_risk": {
+        "type": "noul",
+        "noul": 0.14
+      },
+      "op__resync_ad_budgets": {
+        "type": "noul",
+        "noul": 0.1
+      },
+      "op__legal_recheck": {
+        "type": "noul",
+        "noul": 0.05
+      },
+      "op__rebuild_audience": {
+        "type": "noul",
+        "noul": 0.07
+      },
+      "op__crm_sync": {
+        "type": "noul",
+        "noul": 0.18
+      },
+      "op__regenerate_utm": {
+        "type": "noul",
+        "noul": 0.09
+      },
+      "op__recompute_forecast": {
+        "type": "noul",
+        "noul": 0.8
+      },
+      "op__finance_approval": {
+        "type": "noul",
+        "noul": 0.08
+      },
+      "op__invalidate_gdpr": {
+        "type": "noul",
+        "noul": 0.1
+      }
+    },
+    "usage": {
+      "input_tokens": 7232,
+      "output_tokens": 685
+    }
+  }
+}

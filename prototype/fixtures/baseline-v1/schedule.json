@@ -1,0 +1,161 @@
+{
+  "scenario": "schedule",
+  "recorded_at": "2026-09-19T20:25:57.576Z",
+  "model": "jev-latest",
+  "changes": 8,
+  "questions": 24,
+  "state_bytes": 6763,
+  "request_bytes": 17894,
+  "latency_ms": 169,
+  "usage": {
+    "input_tokens": 6803,
+    "output_tokens": 663
+  },
+  "response": {
+    "model": "jev-1.13.0",
+    "answers": {
+      "material__0": {
+        "type": "noul",
+        "noul": 0.96
+      },
+      "material__1": {
+        "type": "noul",
+        "noul": 0.96
+      },
+      "material__2": {
+        "type": "noul",
+        "noul": 0.97
+      },
+      "material__3": {
+        "type": "noul",
+        "noul": 0.94
+      },
+      "material__4": {
+        "type": "noul",
+        "noul": 0.86
+      },
+      "material__5": {
+        "type": "noul",
+        "noul": 0.93
+      },
+      "material__6": {
+        "type": "noul",
+        "noul": 0.95
+      },
+      "material__7": {
+        "type": "noul",
+        "noul": 0.74
+      },
+      "identity__0": {
+        "type": "choice",
+        "choice": "1",
+        "confidence": 0.99,
+        "probabilities": {
+          "0": 0.01,
+          "1": 0.99,
+          "2": 0,
+          "3": 0,
+          "none": 0
+        }
+      },
+      "identity__1": {
+        "type": "choice",
+        "choice": "2",
+        "confidence": 0.97,
+        "probabilities": {
+          "0": 0,
+          "1": 0.02,
+          "2": 0.98,
+          "3": 0,
+          "none": 0
+        }
+      },
+      "identity__2": {
+        "type": "choice",
+        "choice": "3",
+        "confidence": 0.9,
+        "probabilities": {
+          "0": 0,
+          "1": 0,
+          "2": 0.08,
+          "3": 0.92,
+          "none": 0
+        }
+      },
+      "theme": {
+        "type": "choice",
+        "choice": "schedule",
+        "confidence": 1,
+        "probabilities": {
+          "budget": 0,
+          "creative": 0,
+          "compliance": 0,
+          "targeting": 0,
+          "metadata": 0,
+          "integration": 0,
+          "schedule": 1
+        }
+      },
+      "blast_radius": {
+        "type": "choice",
+        "choice": "external_platforms",
+        "confidence": 0.46,
+        "probabilities": {
+          "this_record": 0.17,
+          "none": 0.01,
+          "external_platforms": 0.5599999999999999,
+          "downstream_consumers": 0.25,
+          "full_relaunch": 0.01
+        }
+      },
+      "safe_while_live": {
+        "type": "noul",
+        "noul": 0.67
+      },
+      "consent_conflict": {
+        "type": "noul",
+        "noul": 0.23
+      },
+      "claim_risk": {
+        "type": "noul",
+        "noul": 0.14
+      },
+      "op__resync_ad_budgets": {
+        "type": "noul",
+        "noul": 0.1
+      },
+      "op__legal_recheck": {
+        "type": "noul",
+        "noul": 0.06
+      },
+      "op__rebuild_audience": {
+        "type": "noul",
+        "noul": 0.08
+      },
+      "op__crm_sync": {
+        "type": "noul",
+        "noul": 0.17
+      },
+      "op__regenerate_utm": {
+        "type": "noul",
+        "noul": 0.09
+      },
+      "op__recompute_forecast": {
+        "type": "noul",
+        "noul": 0.81
+      },
+      "op__finance_approval": {
+        "type": "noul",
+        "noul": 0.07
+      },
+      "op__invalidate_gdpr": {
+        "type": "noul",
+        "noul": 0.1
+      }
+    },
+    "usage": {
+      "input_tokens": 6803,
+      "output_tokens": 663
+    }
+  }
+}

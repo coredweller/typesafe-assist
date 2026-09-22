@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jev Diff Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+:root {
+  --ground:#ECEEF1; --surface:#FCFCFD; --surface-2:#F3F5F7; --surface-3:#E8EBEF;
+  --ink:#151A21; --ink-2:#414C58; --muted:#6E7A86;
+  --rule:#D3D9E0; --rule-strong:#B7C0CA;
+  --accent:#0F6E61; --accent-soft:#D9EBE7;
+  --signal:#9A5308; --signal-soft:#F3E4D1;
+  --danger:#A32C22; --danger-soft:#F5DEDB;
+  --ok:#2C6B3F;
+  --sans:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --serif:"Source Serif 4",Georgia,serif;
+  --mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:#0F1318; --surface:#161B22; --surface-2:#1C232B; --surface-3:#232C35;
+    --ink:#E7EBEF; --ink-2:#B3BEC9; --muted:#828E9A;
+    --rule:#2A323B; --rule-strong:#3B4550;
+    --accent:#56C7B3; --accent-soft:#14322D;
+    --signal:#E2A664; --signal-soft:#33261A;
+    --danger:#E8796B; --danger-soft:#3A201C;
+    --ok:#6FBF88;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:var(--serif); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,textarea,select{font:inherit;color:inherit}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:20;
+  display:flex; flex-wrap:wrap; align-items:center; gap:14px;
+  padding:12px 22px;
+  background:var(--surface); border-bottom:1px solid var(--rule-strong);
+}
+.brand{font-family:var(--sans); font-weight:700; letter-spacing:-.02em; font-size:16px}
+.brand span{color:var(--accent)}
+.topbar .spacer{flex:1}
+.status{font-family:var(--mono); font-size:11.5px; color:var(--muted)}
+.status.err{color:var(--danger)}
+.status.ok{color:var(--ok)}
+
+.btn{
+  font-family:var(--sans); font-weight:600; font-size:13px;
+  padding:8px 16px; border:1px solid var(--accent); border-radius:2px;
+  background:var(--accent); color:var(--ground); cursor:pointer;
+}
+.btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.45; cursor:not-allowed; filter:none}
+.btn.ghost{background:transparent; color:var(--accent)}
+.btn:focus-visible{outline:2px solid var(--signal); outline-offset:2px}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1400px; margin:0 auto; padding:22px 22px 90px}
+.stage{margin-top:26px}
+.stage:first-child{margin-top:0}
+.stage-head{display:flex; align-items:baseline; gap:12px; margin-bottom:10px}
+.stage-num{
+  font-family:var(--mono); font-size:11px; color:var(--accent);
+  border:1px solid var(--accent); padding:1px 6px; border-radius:2px;
+}
+.stage-title{font-family:var(--sans); font-weight:600; font-size:16px; letter-spacing:-.015em}
+.stage-note{font-family:var(--mono); font-size:11.5px; color:var(--muted)}
+.panel{background:var(--surface); border:1px solid var(--rule)}
+.pad{padding:14px 16px}
+.cols{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+@media (max-width:1000px){ .cols{grid-template-columns:1fr} }
+
+/* ---------- scenarios ---------- */
+.scenarios{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px}
+.scn{
+  font-family:var(--sans); font-size:13px; font-weight:500; text-align:left;
+  padding:9px 14px; border:1px solid var(--rule-strong); border-radius:2px;
+  background:var(--surface); cursor:pointer;
+}
+.scn:hover{border-color:var(--accent)}
+.scn[aria-pressed="true"]{background:var(--accent-soft); border-color:var(--accent); color:var(--accent); font-weight:700}
+.scn:focus-visible{outline:2px solid var(--signal); outline-offset:2px}
+.blurb{font-size:14.5px; color:var(--ink-2); margin:0 0 8px; max-width:92ch}
+.proves{
+  font-family:var(--mono); font-size:11.5px; line-height:1.6; color:var(--ink-2);
+  border-left:3px solid var(--signal); background:var(--signal-soft);
+  padding:9px 12px; max-width:110ch;
+}
+.proves b{color:var(--ink); font-family:var(--sans); font-size:12px}
+
+/* ---------- json panes ---------- */
+.pane-head{
+  display:flex; align-items:center; gap:10px;
+  padding:8px 12px; border-bottom:1px solid var(--rule); background:var(--surface-2);
+  font-family:var(--mono); font-size:11.5px; color:var(--muted);
+}
+.pane-head b{color:var(--ink); font-size:12px}
+.pane-head .spacer{flex:1}
+pre.json, textarea.json{
+  font-family:var(--mono); font-size:11.5px; line-height:1.55;
+  margin:0; padding:12px; width:100%; height:340px;
+  overflow:auto; background:var(--surface); color:var(--ink-2);
+  border:0; resize:vertical; display:block; white-space:pre;
+}
+textarea.json:focus{outline:2px solid var(--accent); outline-offset:-2px}
+.invalid{color:var(--danger); font-family:var(--mono); font-size:11px}
+
+/* ---------- tables ---------- */
+table{border-collapse:collapse; width:100%; font-size:12.5px}
+th,td{text-align:left; padding:7px 12px; border-bottom:1px solid var(--rule); vertical-align:top}
+th{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+  font-weight:500; color:var(--muted); border-bottom:1px solid var(--rule-strong);
+  white-space:nowrap; background:var(--surface-2); position:sticky; top:0;
+}
+td.path{font-family:var(--mono); color:var(--ink); word-break:break-all}
+td.val{font-family:var(--mono); color:var(--ink-2); word-break:break-all}
+td.op{font-family:var(--mono); font-size:11px}
+tbody tr:last-child td{border-bottom:0}
+tr.suspect td.path{color:var(--signal)}
+.scroll{max-height:400px; overflow:auto}
+
+.tag{
+  font-family:var(--mono); font-size:10px; padding:1px 5px; border-radius:2px;
+  border:1px solid var(--rule-strong); white-space:nowrap;
+}
+.tag.add{color:var(--ok); border-color:var(--ok)}
+.tag.remove{color:var(--danger); border-color:var(--danger)}
+.tag.replace{color:var(--accent); border-color:var(--accent)}
+.tag.warn{color:var(--signal); border-color:var(--signal); background:var(--signal-soft)}
+
+/* ---------- probability bars ---------- */
+.prob{
+  display:grid; grid-template-columns:minmax(0,1fr) 120px 3.6ch;
+  align-items:center; gap:10px; font-family:var(--mono); font-size:11.5px;
+  padding:3px 0;
+}
+.prob-key{color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.bar{height:8px; background:var(--surface-3); border:1px solid var(--rule); display:block}
+.bar i{display:block; height:100%; background:var(--rule-strong)}
+.prob-val{text-align:right; font-variant-numeric:tabular-nums; color:var(--muted)}
+.prob.hit .prob-key{color:var(--ink); font-weight:700}
+.prob.hit .bar i{background:var(--accent)}
+.prob.hit .prob-val{color:var(--ink); font-weight:700}
+.prob.warn .bar i{background:var(--signal)}
+.prob.warn .prob-key,.prob.warn .prob-val{color:var(--signal)}
+
+.qgroup{border-top:1px solid var(--rule); padding:11px 16px}
+.qgroup:first-child{border-top:0}
+.qgroup h4{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted); margin:0 0 8px; font-weight:500;
+}
+
+/* ---------- operations ---------- */
+.gates{display:flex; flex-wrap:wrap; gap:26px; align-items:center; padding:12px 16px; border-bottom:1px solid var(--rule); background:var(--surface-2)}
+.gate{display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:11.5px; color:var(--muted)}
+.gate input[type=range]{width:150px; accent-color:var(--accent)}
+.gate b{font-variant-numeric:tabular-nums; color:var(--ink); min-width:3.5ch}
+
+.buckets{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; padding:14px 16px}
+@media (max-width:1000px){ .buckets{grid-template-columns:1fr} }
+.bucket h4{
+  font-family:var(--sans); font-size:12.5px; margin:0 0 9px; letter-spacing:.01em;
+  display:flex; align-items:center; gap:8px;
+}
+.bucket h4 em{font-family:var(--mono); font-style:normal; font-size:10.5px; color:var(--muted)}
+.bucket.required h4{color:var(--danger)}
+.bucket.review h4{color:var(--signal)}
+.bucket.skip h4{color:var(--muted)}
+.op{
+  border:1px solid var(--rule); border-left:3px solid var(--rule-strong);
+  background:var(--surface); padding:9px 11px; margin-bottom:8px;
+}
+.bucket.required .op{border-left-color:var(--danger)}
+.bucket.review .op{border-left-color:var(--signal)}
+.op-top{display:flex; align-items:baseline; gap:8px}
+.op-label{font-family:var(--sans); font-weight:600; font-size:12.5px; flex:1}
+.op-p{font-family:var(--mono); font-size:11.5px; font-variant-numeric:tabular-nums; color:var(--ink-2)}
+.op-ep{font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:3px; word-break:break-all}
+.empty{font-family:var(--mono); font-size:11px; color:var(--muted); padding:6px 0}
+
+/* ---------- flags & readings ---------- */
+.flag{
+  border:1px solid var(--signal); border-left:3px solid var(--signal);
+  background:var(--signal-soft); padding:10px 13px; margin:0 16px 10px;
+  font-size:13px; color:var(--ink-2);
+}
+.readings{display:flex; flex-wrap:wrap; gap:1px; background:var(--rule); border-bottom:1px solid var(--rule)}
+.reading{flex:1 1 150px; background:var(--surface); padding:10px 14px}
+.reading dt{font-family:var(--mono); font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin-bottom:5px}
+.reading dd{margin:0; font-family:var(--sans); font-weight:600; font-size:14px}
+.reading dd small{font-family:var(--mono); font-weight:400; font-size:11px; color:var(--muted)}
+
+details.payload summary{
+  cursor:pointer; padding:9px 14px; font-family:var(--mono); font-size:11.5px;
+  color:var(--ink-2); background:var(--surface-2); border-bottom:1px solid var(--rule);
+  user-select:none;
+}
+details.payload summary:hover{color:var(--accent)}
+details.payload pre{max-height:420px}
+.hint{font-family:var(--mono); font-size:11px; color:var(--muted); padding:10px 16px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">Jev <span>/</span> campaign diff</div>
+  <div class="status" id="bundle-status"></div>
+  <div class="spacer"></div>
+  <div class="status" id="call-status">not called yet</div>
+  <button class="btn" id="ask" disabled>Ask Jev</button>
+</div>
+
+<div class="wrap">
+
+  <section class="stage">
+    <div class="stage-head">
+      <span class="stage-num">1</span>
+      <span class="stage-title">Revision</span>
+      <span class="stage-note">pick a preset, or edit the After JSON below</span>
+    </div>
+    <div class="scenarios" id="scenarios"></div>
+    <p class="blurb" id="blurb"></p>
+    <div class="proves" id="proves"></div>
+  </section>
+
+  <section class="stage">
+    <div class="stage-head">
+      <span class="stage-num">2</span>
+      <span class="stage-title">Before / After</span>
+      <span class="stage-note">the After pane is editable — the diff regenerates as you type</span>
+    </div>
+    <div class="cols">
+      <div class="panel">
+        <div class="pane-head"><b>Before</b><span>version 7 · read only</span></div>
+        <pre class="json" id="before-json"></pre>
+      </div>
+      <div class="panel">
+        <div class="pane-head">
+          <b>After</b><span class="spacer"></span>
+          <span id="json-state"></span>
+        </div>
+        <textarea class="json" id="after-json" spellcheck="false"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage">
+    <div class="stage-head">
+      <span class="stage-num">3</span>
+      <span class="stage-title">Computed diff</span>
+      <span class="stage-note">code output, not model output — exact, and free</span>
+    </div>
+    <div class="panel">
+      <div class="pane-head"><b id="diff-count">0 changes</b><span id="diff-note"></span></div>
+      <div class="scroll"><table id="diff-table"></table></div>
+    </div>
+  </section>
+
+  <section class="stage">
+    <div class="stage-head">
+      <span class="stage-num">4</span>
+      <span class="stage-title">Request to Jev</span>
+      <span class="stage-note">state carries both versions <em>and</em> the diff</span>
+    </div>
+    <div class="panel">
+      <details class="payload">
+        <summary id="payload-summary">show POST /v1/systemone payload</summary>
+        <pre class="json" id="payload-json"></pre>
+      </details>
+      <div class="hint" id="payload-hint"></div>
+    </div>
+  </section>
+
+  <section class="stage">
+    <div class="stage-head">
+      <span class="stage-num">5</span>
+      <span class="stage-title">Answers</span>
+      <span class="stage-note">every probability is calibrated and independent</span>
+    </div>
+    <div class="panel" id="answers">
+      <div class="hint">Press <b>Ask Jev</b> to send this payload to the live API.</div>
+    </div>
+  </section>
+
+  <section class="stage">
+    <div class="stage-head">
+      <span class="stage-num">6</span>
+      <span class="stage-title">Operations</span>
+      <span class="stage-note">a readout — nothing is executed</span>
+    </div>
+    <div class="panel" id="operations">
+      <div class="hint">Waiting for answers.</div>
+    </div>
+  </section>
+
+</div>
+
+<script type="module" src="/app.js"></script>
+</body>
+</html>
