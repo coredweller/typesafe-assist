@@ -1,15 +1,15 @@
 {
   "scenario": "budget",
-  "recorded_at": "2026-09-24T03:41:50.798Z",
+  "recorded_at": "2026-09-22T03:10:07.116Z",
   "model": "jev-latest",
   "changes": 10,
-  "questions": 30,
+  "questions": 24,
   "state_bytes": 6946,
-  "request_bytes": 22203,
-  "latency_ms": 356,
+  "request_bytes": 18432,
+  "latency_ms": 397,
   "usage": {
-    "input_tokens": 7491,
-    "output_tokens": 694
+    "input_tokens": 6741,
+    "output_tokens": 568
   },
   "response": {
     "model": "jev-1.13.0",
@@ -28,11 +28,11 @@
       },
       "material__3": {
         "type": "noul",
-        "noul": 0.91
+        "noul": 0.92
       },
       "material__4": {
         "type": "noul",
-        "noul": 0.94
+        "noul": 0.95
       },
       "material__5": {
         "type": "noul",
@@ -40,53 +40,53 @@
       },
       "material__6": {
         "type": "noul",
-        "noul": 0.92
+        "noul": 0.94
       },
       "material__7": {
         "type": "noul",
-        "noul": 0.74
+        "noul": 0.73
       },
       "material__8": {
         "type": "noul",
-        "noul": 0.66
+        "noul": 0.65
       },
       "material__9": {
         "type": "noul",
-        "noul": 0.7
+        "noul": 0.66
       },
       "theme": {
         "type": "choice",
         "choice": "budget",
         "confidence": 1,
         "probabilities": {
-          "targeting": 0,
-          "metadata": 0,
-          "integration": 0,
           "schedule": 0,
-          "creative": 0,
+          "integration": 0,
           "compliance": 0,
+          "metadata": 0,
+          "targeting": 0,
+          "creative": 0,
           "budget": 1
         }
       },
       "blast_radius": {
         "type": "choice",
         "choice": "external_platforms",
-        "confidence": 0.88,
+        "confidence": 0.86,
         "probabilities": {
+          "external_platforms": 0.89,
+          "none": 0,
           "full_relaunch": 0,
-          "downstream_consumers": 0.09,
           "this_record": 0.01,
-          "external_platforms": 0.9,
-          "none": 0
+          "downstream_consumers": 0.1
         }
       },
       "safe_while_live": {
         "type": "noul",
-        "noul": 0.58
+        "noul": 0.6
       },
       "invalidates_approval": {
         "type": "noul",
-        "noul": 0.55
+        "noul": 0.58
       },
       "consent_conflict": {
         "type": "noul",
@@ -106,7 +106,7 @@
       },
       "op__rebuild_audience": {
         "type": "noul",
-        "noul": 0.07
+        "noul": 0.08
       },
       "op__crm_sync": {
         "type": "noul",
@@ -126,36 +126,12 @@
       },
       "op__invalidate_gdpr": {
         "type": "noul",
-        "noul": 0.26
-      },
-      "op__push_channel_config": {
-        "type": "noul",
-        "noul": 0.12
-      },
-      "op__reprogram_send_schedule": {
-        "type": "noul",
-        "noul": 0.09
-      },
-      "op__repush_creative_set": {
-        "type": "noul",
-        "noul": 0.1
-      },
-      "op__rebaseline_reporting": {
-        "type": "noul",
-        "noul": 0.09
-      },
-      "op__update_retention_policy": {
-        "type": "noul",
-        "noul": 0.07
-      },
-      "op__halt_delivery": {
-        "type": "noul",
-        "noul": 0.08
+        "noul": 0.22
       }
     },
     "usage": {
-      "input_tokens": 7491,
-      "output_tokens": 694
+      "input_tokens": 6741,
+      "output_tokens": 568
     }
   }
 }

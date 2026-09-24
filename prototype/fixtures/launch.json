@@ -1,22 +1,22 @@
 {
-  "scenario": "audience",
-  "recorded_at": "2026-09-24T03:41:51.235Z",
+  "scenario": "launch",
+  "recorded_at": "2026-09-24T03:41:51.867Z",
   "model": "jev-latest",
-  "changes": 4,
-  "questions": 24,
-  "state_bytes": 6611,
-  "request_bytes": 19547,
-  "latency_ms": 127,
+  "changes": 7,
+  "questions": 27,
+  "state_bytes": 6683,
+  "request_bytes": 20709,
+  "latency_ms": 154,
   "usage": {
-    "input_tokens": 6628,
-    "output_tokens": 588
+    "input_tokens": 7041,
+    "output_tokens": 640
   },
   "response": {
     "model": "jev-1.13.0",
     "answers": {
       "material__0": {
         "type": "noul",
-        "noul": 0.96
+        "noul": 0.97
       },
       "material__1": {
         "type": "noul",
@@ -24,73 +24,85 @@
       },
       "material__2": {
         "type": "noul",
-        "noul": 0.95
+        "noul": 0.96
       },
       "material__3": {
         "type": "noul",
-        "noul": 0.29
+        "noul": 0.95
+      },
+      "material__4": {
+        "type": "noul",
+        "noul": 0.83
+      },
+      "material__5": {
+        "type": "noul",
+        "noul": 0.24
+      },
+      "material__6": {
+        "type": "noul",
+        "noul": 0.21
       },
       "theme": {
         "type": "choice",
-        "choice": "targeting",
-        "confidence": 0.99,
+        "choice": "schedule",
+        "confidence": 0.65,
         "probabilities": {
-          "creative": 0,
+          "metadata": 0,
           "integration": 0,
-          "compliance": 0.01,
-          "budget": 0,
-          "schedule": 0,
-          "targeting": 0.99,
-          "metadata": 0
+          "compliance": 0,
+          "budget": 0.3,
+          "targeting": 0,
+          "schedule": 0.7,
+          "creative": 0
         }
       },
       "blast_radius": {
         "type": "choice",
         "choice": "external_platforms",
-        "confidence": 0.58,
+        "confidence": 0.86,
         "probabilities": {
           "this_record": 0.02,
+          "external_platforms": 0.89,
+          "full_relaunch": 0,
           "none": 0,
-          "external_platforms": 0.66,
-          "downstream_consumers": 0.28,
-          "full_relaunch": 0.04
+          "downstream_consumers": 0.09
         }
       },
       "safe_while_live": {
         "type": "noul",
-        "noul": 0.23
+        "noul": 0.26
       },
       "invalidates_approval": {
         "type": "noul",
-        "noul": 0.82
+        "noul": 0.42
       },
       "consent_conflict": {
         "type": "noul",
-        "noul": 0.94
+        "noul": 0.21
       },
       "claim_risk": {
         "type": "noul",
-        "noul": 0.14
+        "noul": 0.12
       },
       "op__resync_ad_budgets": {
         "type": "noul",
-        "noul": 0.1
+        "noul": 0.93
       },
       "op__legal_recheck": {
         "type": "noul",
-        "noul": 0.19
+        "noul": 0.06
       },
       "op__rebuild_audience": {
         "type": "noul",
-        "noul": 0.94
+        "noul": 0.07
       },
       "op__crm_sync": {
         "type": "noul",
-        "noul": 0.56
+        "noul": 0.47
       },
       "op__regenerate_utm": {
         "type": "noul",
-        "noul": 0.96
+        "noul": 0.1
       },
       "op__recompute_forecast": {
         "type": "noul",
@@ -98,40 +110,40 @@
       },
       "op__finance_approval": {
         "type": "noul",
-        "noul": 0.24
+        "noul": 0.31
       },
       "op__invalidate_gdpr": {
         "type": "noul",
-        "noul": 0.91
+        "noul": 0.14
       },
       "op__push_channel_config": {
         "type": "noul",
-        "noul": 0.14
+        "noul": 0.21
       },
       "op__reprogram_send_schedule": {
         "type": "noul",
-        "noul": 0.11
+        "noul": 0.95
       },
       "op__repush_creative_set": {
         "type": "noul",
-        "noul": 0.08
+        "noul": 0.06
       },
       "op__rebaseline_reporting": {
         "type": "noul",
-        "noul": 0.84
+        "noul": 0.18
       },
       "op__update_retention_policy": {
         "type": "noul",
-        "noul": 0.08
+        "noul": 0.07
       },
       "op__halt_delivery": {
         "type": "noul",
-        "noul": 0.1
+        "noul": 0.21
       }
     },
     "usage": {
-      "input_tokens": 6628,
-      "output_tokens": 588
+      "input_tokens": 7041,
+      "output_tokens": 640
     }
   }
 }

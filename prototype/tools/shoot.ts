@@ -162,17 +162,19 @@ console.log(`\nDriving ${BASE}\n`);
 
 await cdp.send("Page.navigate", { url: BASE });
 await until(cdp, `!!document.querySelector('#ask')`, "page shell");
-// The bundle is compiled on demand, so the first load can be slow.
+// The bundle is compiled on demand, so the first load can be slow. Wait on the
+// status line main.ts writes once SCENARIOS is rendered rather than on a button
+// count, so adding a scenario doesn't silently break the wait.
 await until(
   cdp,
-  `document.querySelectorAll('#scenarios .scn').length === 4`,
+  `/^\\d+ scenarios loaded$/.test(document.querySelector('#bundle-status')?.textContent ?? '')`,
   "scenario buttons (bundle compiled)",
 );
-console.log("  bundle loaded, 4 scenarios rendered");
 
 const scenarios = await cdp.eval<string[]>(
   `Array.from(document.querySelectorAll('#scenarios .scn')).map(b => b.textContent.trim())`,
 );
+console.log(`  bundle loaded, ${scenarios.length} scenarios rendered`);
 
 for (let i = 0; i < scenarios.length; i++) {
   const label = scenarios[i].toLowerCase().split(/[\s—]/)[0].replace(/\W/g, "");

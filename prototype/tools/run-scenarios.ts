@@ -344,10 +344,23 @@ function crossCheck(runs: Array<{ id: string; v: ReturnType<typeof score> }>) {
   const themes = runs.map((r) => r.v.theme?.choice ?? "—");
   const themeConfs = runs.map((r) => r.v.theme?.confidence ?? 0);
   console.log(`   theme            ${themes.join(", ")}`);
+  // With more scenarios than theme options, two revisions sharing a label is
+  // correct rather than a failure — the original "all distinct" test only held
+  // while there were four. What would be a failure is one label swallowing the
+  // set, so that is what is checked.
+  const themeCounts = new Map<string, number>();
+  for (const t of themes) themeCounts.set(t, (themeCounts.get(t) ?? 0) + 1);
+  const [modal, modalCount] = [...themeCounts].sort((a, b) => b[1] - a[1])[0];
   console.log(
-    new Set(themes).size === runs.length
-      ? C.green(`   ✓ all distinct, min conf ${Math.min(...themeConfs).toFixed(2)}`)
-      : C.yellow(`   ~ ${new Set(themes).size}/${runs.length} distinct`),
+    modalCount > runs.length / 2
+      ? C.red(
+        `   ✗ "${modal}" claims ${modalCount}/${runs.length} — not discriminating`,
+      )
+      : C.green(
+        `   ✓ ${themeCounts.size} distinct across ${runs.length}, min conf ${
+          Math.min(...themeConfs).toFixed(2)
+        }`,
+      ),
   );
 
   // Materiality / operation disagreement — the UTM case from the handoff.
@@ -355,8 +368,12 @@ function crossCheck(runs: Array<{ id: string; v: ReturnType<typeof score> }>) {
   let disagreements = 0;
   for (const { id, v } of runs) {
     const anyCosmetic = v.changes.filter((c) => c.probability < 0.35);
-    const req = v.operations.filter((o) => o.bucket === "required");
-    if (anyCosmetic.length && req.length) {
+    // Any gate cleared, not just Required. The `noise` scenario is the case
+    // that made the difference: every change graded .04-.08 cosmetic while
+    // crm_sync cleared the review gate at .73 off the campaign rename. Looking
+    // only at Required missed it entirely.
+    const gated = v.operations.filter((o) => o.bucket !== "skip");
+    if (anyCosmetic.length && gated.length) {
       // Cheap heuristic: an op fired while every change it plausibly keys off
       // was graded cosmetic. Reported, not enforced.
       const allCosmetic = v.changes.every((c) => c.probability < 0.5);
@@ -364,7 +381,10 @@ function crossCheck(runs: Array<{ id: string; v: ReturnType<typeof score> }>) {
         disagreements++;
         console.log(
           C.yellow(
-            `     ${id}: ${req.length} op(s) required but no change graded material`,
+            `     ${id}: no change graded material, yet ${
+              gated.map((o) => `${o.key.replace("op__", "")} ${o.probability.toFixed(2)}`)
+                .join(", ")
+            } cleared a gate`,
           ),
         );
       }

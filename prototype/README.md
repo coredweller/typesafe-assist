@@ -53,7 +53,7 @@ Two more things that will bite:
 The page is six numbered stages, top to bottom, and the whole argument is
 visible by comparing stage 3 against stage 5.
 
-1. **Revision** — pick one of the four presets.
+1. **Revision** — pick one of the nine presets.
 2. **Before / After** — the After pane is editable. Type in it and stages 3 and
    4 regenerate as you go.
 3. **Computed diff** — produced by `src/diff.ts`. No model involved. Rows in a
@@ -92,8 +92,8 @@ was found in the state, which is why both full versions belong in the payload.
 The UI is the demo; these are how the thing is actually tested.
 
 ```bash
-deno task scenarios            # run all four live, record fixtures/
-deno task scenarios -- creative   # just one
+deno task scenarios            # run all nine live, record fixtures/
+deno task scenarios -- creative   # just one, or several by id
 deno task scenarios -- --replay   # re-score recorded fixtures, no API calls
 deno task scenarios -- --diff     # run live, diffed against the last fixtures
 deno task scale                # ramp the change count and watch the batch hold
@@ -105,14 +105,18 @@ deno task check                # type-check everything
 interpretation changes are free to iterate on. `--diff` is what you run after
 editing a rubric — it prints per-answer deltas against the recorded run, so a
 rubric change is measured rather than eyeballed. `fixtures/baseline-v1/` holds
-the pre-rubric-fix run for comparison.
+the pre-rubric-fix run and `fixtures/baseline-v2/` the eight-operation run, both
+for comparison.
 
 `deno task shoot` needs the dev server already listening, and assumes Edge at
 its default install path (`--browser` to override).
 
 ---
 
-## The four scenarios
+## The nine scenarios
+
+The first four are the original set. The last five were added to cover axes none
+of them reached.
 
 | Scenario | Changes | What it proves |
 |---|---|---|
@@ -120,6 +124,11 @@ its default install path (`--browser` to override).
 | **Creative copy edits** | 5 | Semantic judgement. Two subject edits are *structurally identical*. One is a reword; the other adds "guaranteed 3x ROI". Nothing in the JSON says which |
 | **Send window shifted** | 8 | Array-element identity. `send_windows` has no ids, so dropping one entry makes the index-matched differ report 8 edits for what is really 1 removal + 1 edit |
 | **Audience → DE/FR** | 4 | Cross-field consistency. `compliance.restricted_regions` still blocks DE and FR, but compliance is *unchanged* — so the conflict appears nowhere in the diff |
+| **Cosmetic churn** | 4 | The negative case. Reordering `allocations` (keyed) yields **zero** rows; reordering `exclusions` and `industries` (unkeyed primitives) yields two false ones. Materiality must collapse — it does, `.04–.08` |
+| **Channel disabled** | 4 | Diff size ≠ consequence. `enabled: true → false` is the smallest edit reportable and grades `.97`, top of the scenario. `landing.ab_test` is left 50/50 against a variant that no longer exists |
+| **Integration re-pointing** | 6 | Reach without visibility. Nothing customer-facing, every change re-points an external system. The row graded *lowest* (`.42`) is the new Salesforce ref — the one aiming the campaign at a different record |
+| **Launched early** | 7 | The only revision that is actually delivering, so the only one where `safe_while_live` has a true answer (`.26`, decisive). It also self-approves finance, and `approvals[finance].by` grades `.22` |
+| **Guardrail loosened** | 4 | Editing the rule instead of the thing it governs. `consent_conflict` correctly goes quiet — after this revision there is no conflict left — and only `invalidates_approval` (`.77`) catches it |
 
 ## The pipeline
 
@@ -140,7 +149,7 @@ request there. It never reaches the browser — verified:
 
 ## Question shape
 
-Roughly 18–25 questions per request, in three groups:
+Roughly 24–31 questions per request, in three groups:
 
 - `material__<i>` — one `noul` per change. The key encodes the change index so
   answers zip back to changes, the same trick as `entity__light` in
@@ -238,6 +247,141 @@ cross-question reconciliation happens in `interpret.ts`.
 scenarios at `.99–1.00`. Per-change materiality separates signal from noise
 every time. Operation gates are strongly bimodal — relevant at `.88–.97`,
 irrelevant at `.05–.25`.
+
+---
+
+## What the five added scenarios established
+
+Measured 22 Sep 2026 against `jev-1.13.0`. All five returned 100% of answers
+(18–21 questions each, 160–320 ms). The original four fixtures were left
+untouched, so `--diff` still baselines against them.
+
+**`blast_radius` does discriminate — the original four just all sat in one
+band.** The standing complaint was that it returned `external_platforms` in
+every scenario, and the harness cross-check called the rubric non-discriminating.
+Across nine it returns three distinct options and the check goes green:
+`noise → none` (`.70`, runner-up `.16`), `guardrail → downstream_consumers`,
+and the rest `external_platforms`. The ordinal-ladder rewrite worked; what was
+missing was a revision whose correct answer was *not* at the far end. Note this
+narrows open item 2 rather than closing it — five of nine still answer
+`external_platforms`, and the derived value still disagrees with the asked one
+five times out of nine.
+
+**The self-approval is invisible to per-field materiality.** In `launch`,
+`approvals[finance].status` (`pending → approved`) grades `.83`, but
+`approvals[finance].by` (`null → u_221`) grades `.22` — bookkeeping. `u_221` is
+the campaign owner and the same user as `updated_by`: the signer *is* the
+requester, which is the only genuinely alarming fact in the revision. No single
+field can carry it, so no per-change question can ask about it. This is a
+structural limit of one-question-per-change, not a calibration problem, and it
+wants a relational question of its own.
+
+**The negative control is not fully dark, for a defensible reason.** Every
+change in `noise` grades `.04–.08`, exactly as it should. But `crm_sync` still
+clears the review gate at `.73`, because the campaign was renamed and its
+description says "needed when names … change". That is arguably right — the CRM
+does hold the name. The harness check for this pattern only looked at the
+*Required* bucket and therefore missed it; it now looks at any cleared gate, and
+reports `noise: no change graded material, yet crm_sync 0.73 cleared a gate`.
+
+**The operations catalogue had a hole — now closed.** `channel` disables an
+entire paid channel and `integration` swaps the LinkedIn ad account, and in both
+cases `op__resync_ad_budgets` came back at `.10`. Consistent with its rubric —
+that description is written about spend figures and pacing, and neither changed
+— but there was no operation for pushing *delivery configuration* to a platform,
+so the most consequential change in `channel` mapped to nothing. Six operations
+were added to cover that and five similar gaps; see below.
+
+**A loosened guardrail clears no gate at all.** In `guardrail`, nothing reaches
+even the review threshold — `invalidate_gdpr` tops out at `.45` — while
+`invalidates_approval` reads `.77` and the derived blast radius is `none`. The
+readout would be empty if it were driven by the operation gates alone. The
+global readings are what catch it, which is the argument for keeping both.
+
+**`safe_while_live` now has a live case, and it answers it.** `.26` on `launch`
+— decisively negative, correctly flagged as "halt or re-gate before applying".
+Against the `scheduled` scenarios it spreads `.20–.86`. The premise text is now
+branched on status, because the original wording asserted "not delivering yet —
+no sends, no impressions, nothing in flight", which a `live` campaign makes
+false. The `scheduled` branch is kept byte-for-byte so the fixtures stay
+comparable.
+
+**Two readings sit in the middle and are honest about it.** `integration` at
+`.48` and `guardrail` at `.49` on `safe_while_live`, both caught by
+`UNCERTAIN_BAND` and reported as unanswered rather than rounded. Across nine,
+`safe_while_live` and `invalidates_approval` are each 5/9 decisive.
+
+**`theme` is capped by its option count, not by its calibration.** Seven
+distinct labels across nine scenarios, min confidence `.60`. `channel` returns
+`creative` (`.97`) — there is no channel- or delivery-config option to return —
+and `launch` returns `schedule` at `.60`, its lowest confidence anywhere, which
+is the right answer for a revision that is genuinely three things at once. The
+cross-check was rewritten accordingly: it no longer demands all-distinct (which
+was only achievable at four), and instead fails when one label claims more than
+half the set.
+
+---
+
+## Closing the coverage gap — six more operations
+
+Measured 23 Sep 2026 against `jev-1.13.0`. The catalogue went from 8 to 14, so
+requests are now 24–31 questions. All nine scenarios returned 100% of answers at
+113–356 ms. The previous fixtures are preserved in `fixtures/baseline-v2/`.
+
+| Added operation | Reach | Fires on | Stays dark elsewhere |
+|---|---|---|---|
+| `push_channel_config` | external | `channel` `.97`, `integration` `.88` | `.08–.21` |
+| `reprogram_send_schedule` | external | `schedule` `.97`, `launch` `.95` | `.06–.11` |
+| `repush_creative_set` | external | `channel` `.92` | `.06–.08` |
+| `rebaseline_reporting` | downstream | `integration` `.98`, `audience` `.84` | `.09–.18` |
+| `update_retention_policy` | downstream | `guardrail` `.92` | `.06–.09` |
+| `halt_delivery` | external | — nothing, see below | `.06–.21` |
+
+**The exclusion clauses are what made them discriminate.** Each description is
+*what it does* + "Needed when…" + an explicit exclusion, and the exclusions are
+doing visible work:
+
+- `repush_creative_set` excludes "an edit to the wording inside a variant that is
+  already in rotation". `creative` — five copy edits — scores it `.07`. `channel`,
+  which deletes a variant and re-weights the other, scores it `.92`. Without that
+  clause it would have fired on every creative scenario.
+- `rebaseline_reporting` excludes "target numbers move while the way they are
+  measured stays the same". `budget` moves all three targets and scores `.09`;
+  `integration` switches the attribution model and scores `.98`.
+- `push_channel_config` excludes spend figures and pacing, deferring to
+  `resync_ad_budgets`. On `budget` it reads `.12` while `resync_ad_budgets`
+  reads `.97` — the two do not overlap.
+
+**Every scenario now has at least one Required operation except `noise`**, which
+is the correct outcome for a revision that is entirely cosmetic. `guardrail`
+went from *nothing clearing any gate* to `update_retention_policy` at `.92`.
+
+**`halt_delivery` is the one that cannot be exercised here, and that is a
+property of the fixture, not the rubric.** It tops out at `.21` on `launch` and
+sits `.06–.10` everywhere else. That is correct: `BEFORE` is `scheduled` in every
+scenario, so no revision edits a campaign that was *already* delivering — and you
+do not halt a campaign in order to start it. Note this means a low
+`safe_while_live` does **not** imply `halt_delivery`: that question's false
+criterion is a disjunction ("disrupt delivery already underway, **or** put the
+campaign outside an approval"), and on `launch` it is the approval half that
+fires. Exercising the halt path properly needs a second `BEFORE` with
+`status: "live"`, which is a larger change than adding a scenario.
+
+**Adding external-reach operations made the derived blast radius coarser and
+more accurate at the same time.** It now reads `external_platforms` in seven of
+nine (was four) and agrees with the asked `blast_radius` seven times out of nine
+(was four). Two distinct values instead of three — but the moves are all
+defensible: `schedule` became external because the send calendar genuinely lives
+at the email provider, and `guardrail` went from `none` to `downstream` because
+retention genuinely touches stored records. The old spread came partly from
+blind spots.
+
+**Existing answers moved more than the stated ±0.01 in the mid-range.**
+`crm_sync` on `creative` went `.24 → .16` and on `launch` `.52 → .47`, with
+`legal_recheck` on `audience` `.24 → .19`. State is byte-identical and questions
+cannot see each other, so this is run-to-run variance — it is just larger where
+the distribution is flat than the `±0.01` the bimodal answers show. Treat `±0.01`
+as the figure for decisive answers only.
 
 **One genuinely ambiguous case now exists.** In the audience scenario `crm_sync`
 lands at `.54–.60` across runs, straddling the review gate. Everything else is

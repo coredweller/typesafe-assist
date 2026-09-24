@@ -82,6 +82,37 @@ function approvalSummary(before: Campaign): string {
   return `${signoffs} ${gdpr}`;
 }
 
+/**
+ * The delivery-state premise for `safe_while_live`.
+ *
+ * The question originally hard-coded the `scheduled` case — approved, dated,
+ * nothing in flight — because every scenario had that status. The `launch`
+ * scenario flips the campaign to `live`, which makes that prose flatly false,
+ * and a false premise is worse than a vague one: the handoff's own finding was
+ * that this question was unanswerable as written. So the sentence branches on
+ * status, and the `scheduled` wording is kept byte-for-byte so the recorded
+ * fixtures stay comparable.
+ */
+function deliveryPremise(after: Campaign): string {
+  if (after.status === "live") {
+    return `This campaign's status is "live": it started at ` +
+      `${after.schedule.start_at} and is delivering right now — sends are going ` +
+      `out and impressions are being served against the settings in this ` +
+      `record. Given that, can this revision be applied straight to the record ` +
+      `as it stands?`;
+  }
+  if (after.status === "scheduled") {
+    return `This campaign's status is "${after.status}": it is approved to run and ` +
+      `starts at ${after.schedule.start_at}, but it is not delivering yet — no ` +
+      `sends, no impressions, nothing in flight. Given that, can this revision ` +
+      `be applied straight to the record as it stands?`;
+  }
+  return `This campaign's status is "${after.status}": nothing is being ` +
+    `delivered against this record at the moment, and its start date is ` +
+    `${after.schedule.start_at}. Given that, can this revision be applied ` +
+    `straight to the record as it stands?`;
+}
+
 /** Get a nested array by dotted path, e.g. "schedule.send_windows". */
 function readPath(root: unknown, path: string): unknown {
   return path.split(".").reduce<unknown>((acc, seg) => {
@@ -222,10 +253,7 @@ export function buildQuestions(
   // Now the status is spelled out and the real discriminator (does this break
   // a launch gate?) is stated rather than implied.
   questions.safe_while_live = noul(
-    `This campaign's status is "${after.status}": it is approved to run and ` +
-      `starts at ${after.schedule.start_at}, but it is not delivering yet — no ` +
-      `sends, no impressions, nothing in flight. Given that, can this revision ` +
-      `be applied straight to the record as it stands?`,
+    deliveryPremise(after),
     "Yes — apply in place. Nothing is in flight for it to disrupt, and it does " +
       "not invalidate any approval or review that the launch depends on.",
     "No — the campaign must be halted or re-gated first. Either this would " +
