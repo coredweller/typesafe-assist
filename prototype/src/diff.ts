@@ -8,7 +8,7 @@
  *  - Arrays whose elements carry a stable id are matched *by that id*, so a
  *    reorder produces no changes at all.
  *  - Arrays without ids (notably schedule.send_windows) are matched by index.
- *    That is the naive behaviour, and scenario 3 exists to show it failing:
+ *    That is the naive behaviour, and the schedule scenario shows it failing:
  *    dropping one element reports almost every field of every later element
  *    as changed. Resolving that is what we ask Jev to do.
  */

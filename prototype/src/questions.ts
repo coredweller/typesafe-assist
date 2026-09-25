@@ -40,6 +40,17 @@ export interface BuiltQuestions {
   identities: IdentityTarget[];
 }
 
+/**
+ * Customer-facing copy fields. Changes at these paths also get a per-change
+ * claim question, because the global `claim_risk` can say *that* a claim
+ * appeared but not *which* edit introduced it.
+ */
+const COPY_FIELDS = /\.(subject|preheader|headline)$/;
+
+export function isCopyPath(path: string): boolean {
+  return COPY_FIELDS.test(path);
+}
+
 function noul(instructions: string, t: string, f: string): Question {
   return { type: "noul", instructions, criteria: { true: t, false: f } };
 }
@@ -184,11 +195,25 @@ export function buildQuestions(
     questions[`material__${c.i}`] = noul(
       `Change #${c.i} at "${c.path}" (${c.op}): ${preview(c.old, 90)} → ` +
         `${preview(c.new, 90)}. Is this a material change?`,
-      "Material: it alters behaviour, spend, reach, targeting, timing, or the " +
-        "meaning of customer-facing copy.",
+      "Material: it alters behaviour, spend, reach, targeting, timing, how " +
+        "results are tracked or attributed, or the meaning of customer-facing copy.",
       "Cosmetic: whitespace, casing, punctuation, reordering, an equivalent " +
         "rewording, or a bookkeeping field that carries no decision.",
     );
+
+    // A keyword filter can do half of this. The decoy ("no guarantees") and
+    // the claim with no trigger word ("analysts rank first") are the half it
+    // cannot, and they are why this is asked per edit rather than globally.
+    if (isCopyPath(c.path)) {
+      questions[`claim__${c.i}`] = noul(
+        `Change #${c.i} edits customer-facing copy at "${c.path}": ` +
+          `${preview(c.old, 110)} → ${preview(c.new, 110)}. Does this edit ` +
+          `introduce a performance claim, guarantee, statistic, ranking or ` +
+          `comparison that the previous wording did not make?`,
+        "Yes — the new wording asserts something that would need substantiating.",
+        "No — rewording, formatting or tone only; it asserts nothing new.",
+      );
+    }
   }
 
   // --- array element identity --------------------------------------------
@@ -218,6 +243,8 @@ export function buildQuestions(
       creative: "Customer-facing copy, subject lines, headlines or assets",
       schedule: "When the campaign runs or sends",
       compliance: "Consent basis, data handling, regional restrictions",
+      delivery:
+        "Which channels run and how they deliver: enabled flags, throttles, bids, creative rotation",
       integration: "CRM, marketing automation or ad account wiring",
       metadata: "Names, owners, references and other bookkeeping",
     },
@@ -270,6 +297,20 @@ export function buildQuestions(
       "campaign as revised and must be obtained again before launch.",
     "No — every completed approval and review still covers the campaign as " +
       "revised. A sign-off that was already pending does not count as invalidated.",
+  );
+
+  // Relational, like consent_conflict: no single changed field carries it.
+  // Per-change materiality grades `approvals[finance].by` as bookkeeping,
+  // because on its own it is — the fact lives in who else that user is.
+  questions.unverified_signoff = noul(
+    "Look at the sign-off and review records in the revised version — " +
+      "approvals, and review dates in the compliance block. Does this revision " +
+      "create or refresh any of them without any sign that someone independent " +
+      "of this revision actually performed that approval or review?",
+    "Yes — a sign-off or review now reads as complete, but nothing indicates " +
+      "an independent party did it.",
+    "No — every sign-off and review record is either unchanged by this " +
+      "revision or plausibly reflects independent work.",
   );
 
   questions.consent_conflict = noul(

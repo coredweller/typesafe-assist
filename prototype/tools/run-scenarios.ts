@@ -9,7 +9,7 @@
  * interpretation changes can be re-scored offline, and a rubric change can be
  * compared against the last recorded run instead of against memory.
  *
- *   deno task scenarios              # run all four live, record fixtures
+ *   deno task scenarios              # run all of them live, record fixtures
  *   deno task scenarios -- creative  # run one
  *   deno task scenarios -- --replay  # re-score recorded fixtures, no API calls
  *   deno task scenarios -- --diff    # run live, compare against fixtures
@@ -21,8 +21,7 @@
 import { diffCampaign } from "../src/diff.ts";
 import { buildRequest } from "../src/questions.ts";
 import { DEFAULT_THRESHOLDS, interpret } from "../src/interpret.ts";
-import { SCENARIOS } from "../src/scenarios.ts";
-import { BEFORE } from "../src/campaign.ts";
+import { beforeOf, SCENARIOS } from "../src/scenarios.ts";
 import type { Scenario, SystemOneResponse } from "../src/types.ts";
 
 const UPSTREAM = Deno.env.get("TYPESAFE_BASE_URL") ?? "https://api.typesafe.ai";
@@ -74,8 +73,9 @@ async function callLive(
     );
   }
 
-  const changes = diffCampaign(BEFORE, scenario.after);
-  const { request } = buildRequest(BEFORE, scenario.after, changes);
+  const before = beforeOf(scenario);
+  const changes = diffCampaign(before, scenario.after);
+  const { request } = buildRequest(before, scenario.after, changes);
   const body = JSON.stringify(request);
 
   const started = performance.now();
@@ -135,8 +135,9 @@ async function writeFixture(rec: RunRecord): Promise<void> {
 
 /** Re-run interpret() over a record. Pure — no network. */
 function score(scenario: Scenario, rec: RunRecord) {
-  const changes = diffCampaign(BEFORE, scenario.after);
-  const { built } = buildRequest(BEFORE, scenario.after, changes);
+  const before = beforeOf(scenario);
+  const changes = diffCampaign(before, scenario.after);
+  const { built } = buildRequest(before, scenario.after, changes);
   return interpret(rec.response, built, DEFAULT_THRESHOLDS);
 }
 
@@ -217,6 +218,7 @@ function report(scenario: Scenario, rec: RunRecord, prev: RunRecord | null) {
       ["invalidates_approval", v.invalidatesApproval, prevV?.invalidatesApproval],
       ["consent_conflict    ", v.consentConflict, prevV?.consentConflict],
       ["claim_risk          ", v.claimRisk, prevV?.claimRisk],
+      ["unverified_signoff  ", v.unverifiedSignoff, prevV?.unverifiedSignoff],
     ] as const
   ) {
     console.log(`     ${label}  ${decisive(now)}  ${delta(now, was)}`);
@@ -232,6 +234,19 @@ function report(scenario: Scenario, rec: RunRecord, prev: RunRecord | null) {
     );
   }
 
+  // --- claims, per copy edit ----------------------------------------------
+  const claimed = v.changes.filter((c) => c.claim !== null);
+  if (claimed.length) {
+    console.log(C.bold("   claims"));
+    for (const c of claimed) {
+      const was = prevV?.changes.find((p) => p.change.path === c.change.path);
+      console.log(
+        `     ${decisive(c.claim)}  ${c.change.path.padEnd(46).slice(0, 46)} ` +
+          delta(c.claim, was?.claim ?? null),
+      );
+    }
+  }
+
   // --- identity ------------------------------------------------------------
   if (v.identities.length) {
     console.log(C.bold("   identity"));
@@ -239,7 +254,8 @@ function report(scenario: Scenario, rec: RunRecord, prev: RunRecord | null) {
       const to = id.resolvedTo === null ? "NEW" : `was ${id.resolvedTo}`;
       console.log(
         `     ${id.target.arrayPath}[${id.target.afterIndex}] ← ${to.padEnd(7)} ` +
-          `conf ${id.confidence.toFixed(2)}${id.moved ? C.cyan("  moved") : ""}`,
+          `conf ${id.confidence.toFixed(2)}${id.moved ? C.cyan("  moved") : ""}` +
+          (id.reassigned ? C.yellow("  reassigned 1:1") : ""),
       );
     }
   }

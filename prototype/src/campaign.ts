@@ -24,7 +24,7 @@ export const BEFORE: Campaign = {
     start_at: "2026-10-01T09:00:00Z",
     end_at: "2026-12-15T23:59:00Z",
     timezone: "America/New_York",
-    // No ids on these — deliberately. See scenario 3.
+    // No ids on these — deliberately. See the schedule scenario.
     send_windows: [
       { days: ["mon", "tue", "wed"], start: "09:00", end: "11:30" },
       { days: ["mon", "tue", "wed"], start: "13:00", end: "17:00" },
@@ -160,3 +160,24 @@ export const BEFORE: Campaign = {
 export function clone<T>(value: T): T {
   return structuredClone(value);
 }
+
+/**
+ * The same campaign two weeks later: finance signed off (by someone other
+ * than the owner), it launched on 15 Sept, and it is delivering now.
+ *
+ * Every scenario used to share the `scheduled` BEFORE, which meant nothing was
+ * ever in flight and `halt_delivery` could not fire anywhere. The timezone
+ * pair applies one identical edit to both versions.
+ */
+export const BEFORE_LIVE: Campaign = (() => {
+  const c = clone(BEFORE);
+  c.status = "live";
+  c.schedule.start_at = "2026-09-15T09:00:00Z";
+  c.approvals[2] = {
+    role: "finance",
+    status: "approved",
+    by: "u_40",
+    at: "2026-09-14T16:30:00Z",
+  };
+  return c;
+})();

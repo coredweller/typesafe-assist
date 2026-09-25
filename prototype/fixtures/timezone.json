@@ -1,15 +1,15 @@
 {
-  "scenario": "channel",
-  "recorded_at": "2026-09-24T04:27:26.738Z",
+  "scenario": "timezone",
+  "recorded_at": "2026-09-24T04:27:26.411Z",
   "model": "jev-latest",
-  "changes": 4,
-  "questions": 25,
-  "state_bytes": 6432,
-  "request_bytes": 20196,
-  "latency_ms": 141,
+  "changes": 1,
+  "questions": 22,
+  "state_bytes": 6178,
+  "request_bytes": 18474,
+  "latency_ms": 153,
   "usage": {
-    "input_tokens": 6706,
-    "output_tokens": 613
+    "input_tokens": 6185,
+    "output_tokens": 559
   },
   "response": {
     "model": "jev-1.13.0",
@@ -18,116 +18,104 @@
         "type": "noul",
         "noul": 0.95
       },
-      "material__1": {
-        "type": "noul",
-        "noul": 0.92
-      },
-      "material__2": {
-        "type": "noul",
-        "noul": 0.72
-      },
-      "material__3": {
-        "type": "noul",
-        "noul": 0.97
-      },
       "theme": {
         "type": "choice",
-        "choice": "delivery",
+        "choice": "schedule",
         "confidence": 1,
         "probabilities": {
-          "delivery": 1,
+          "delivery": 0,
           "targeting": 0,
           "budget": 0,
-          "integration": 0,
-          "schedule": 0,
+          "schedule": 1,
           "creative": 0,
+          "metadata": 0,
           "compliance": 0,
-          "metadata": 0
+          "integration": 0
         }
       },
       "blast_radius": {
         "type": "choice",
         "choice": "external_platforms",
-        "confidence": 0.89,
+        "confidence": 0.36,
         "probabilities": {
-          "none": 0,
-          "downstream_consumers": 0.06,
-          "this_record": 0.03,
-          "external_platforms": 0.91,
-          "full_relaunch": 0
+          "full_relaunch": 0,
+          "external_platforms": 0.49,
+          "none": 0.03,
+          "this_record": 0.22,
+          "downstream_consumers": 0.26
         }
       },
       "safe_while_live": {
         "type": "noul",
-        "noul": 0.67
+        "noul": 0.75
       },
       "invalidates_approval": {
         "type": "noul",
-        "noul": 0.38
+        "noul": 0.33
       },
       "unverified_signoff": {
         "type": "noul",
-        "noul": 0.12
+        "noul": 0.11
       },
       "consent_conflict": {
         "type": "noul",
-        "noul": 0.23
+        "noul": 0.29
       },
       "claim_risk": {
         "type": "noul",
-        "noul": 0.16
+        "noul": 0.13
       },
       "op__resync_ad_budgets": {
         "type": "noul",
-        "noul": 0.1
+        "noul": 0.08
       },
       "op__legal_recheck": {
         "type": "noul",
-        "noul": 0.08
+        "noul": 0.05
       },
       "op__rebuild_audience": {
         "type": "noul",
-        "noul": 0.08
+        "noul": 0.1
       },
       "op__crm_sync": {
         "type": "noul",
-        "noul": 0.26
+        "noul": 0.19
       },
       "op__regenerate_utm": {
         "type": "noul",
-        "noul": 0.12
+        "noul": 0.1
       },
       "op__recompute_forecast": {
         "type": "noul",
-        "noul": 0.77
+        "noul": 0.62
       },
       "op__finance_approval": {
         "type": "noul",
-        "noul": 0.09
+        "noul": 0.07
       },
       "op__invalidate_gdpr": {
         "type": "noul",
-        "noul": 0.11
+        "noul": 0.15
       },
       "op__push_channel_config": {
         "type": "noul",
-        "noul": 0.97
+        "noul": 0.11
       },
       "op__reprogram_send_schedule": {
         "type": "noul",
-        "noul": 0.08
+        "noul": 0.97
       },
       "op__repush_creative_set": {
         "type": "noul",
-        "noul": 0.92
+        "noul": 0.05
       },
       "op__rebaseline_reporting": {
         "type": "noul",
-        "noul": 0.3
+        "noul": 0.12
       },
       "op__update_retention_policy": {
         "type": "noul",
-        "noul": 0.07
+        "noul": 0.06
       },
       "op__halt_delivery": {
         "type": "noul",
@@ -135,8 +123,8 @@
       }
     },
     "usage": {
-      "input_tokens": 6706,
-      "output_tokens": 613
+      "input_tokens": 6185,
+      "output_tokens": 559
     }
   }
 }

@@ -1,15 +1,15 @@
 {
   "scenario": "audience",
-  "recorded_at": "2026-09-24T03:41:51.235Z",
+  "recorded_at": "2026-09-24T04:27:26.059Z",
   "model": "jev-latest",
   "changes": 4,
-  "questions": 24,
+  "questions": 25,
   "state_bytes": 6611,
-  "request_bytes": 19547,
-  "latency_ms": 127,
+  "request_bytes": 20379,
+  "latency_ms": 148,
   "usage": {
-    "input_tokens": 6628,
-    "output_tokens": 588
+    "input_tokens": 6800,
+    "output_tokens": 615
   },
   "response": {
     "model": "jev-1.13.0",
@@ -20,7 +20,7 @@
       },
       "material__1": {
         "type": "noul",
-        "noul": 0.98
+        "noul": 0.97
       },
       "material__2": {
         "type": "noul",
@@ -28,20 +28,21 @@
       },
       "material__3": {
         "type": "noul",
-        "noul": 0.29
+        "noul": 0.56
       },
       "theme": {
         "type": "choice",
         "choice": "targeting",
         "confidence": 0.99,
         "probabilities": {
-          "creative": 0,
-          "integration": 0,
-          "compliance": 0.01,
+          "targeting": 0.99,
+          "delivery": 0,
           "budget": 0,
           "schedule": 0,
-          "targeting": 0.99,
-          "metadata": 0
+          "integration": 0,
+          "creative": 0,
+          "metadata": 0,
+          "compliance": 0.01
         }
       },
       "blast_radius": {
@@ -49,20 +50,24 @@
         "choice": "external_platforms",
         "confidence": 0.58,
         "probabilities": {
-          "this_record": 0.02,
+          "downstream_consumers": 0.25,
           "none": 0,
-          "external_platforms": 0.66,
-          "downstream_consumers": 0.28,
-          "full_relaunch": 0.04
+          "this_record": 0.02,
+          "external_platforms": 0.67,
+          "full_relaunch": 0.06
         }
       },
       "safe_while_live": {
         "type": "noul",
-        "noul": 0.23
+        "noul": 0.21
       },
       "invalidates_approval": {
         "type": "noul",
-        "noul": 0.82
+        "noul": 0.85
+      },
+      "unverified_signoff": {
+        "type": "noul",
+        "noul": 0.15
       },
       "consent_conflict": {
         "type": "noul",
@@ -74,15 +79,15 @@
       },
       "op__resync_ad_budgets": {
         "type": "noul",
-        "noul": 0.1
+        "noul": 0.09
       },
       "op__legal_recheck": {
         "type": "noul",
-        "noul": 0.19
+        "noul": 0.22
       },
       "op__rebuild_audience": {
         "type": "noul",
-        "noul": 0.94
+        "noul": 0.95
       },
       "op__crm_sync": {
         "type": "noul",
@@ -98,7 +103,7 @@
       },
       "op__finance_approval": {
         "type": "noul",
-        "noul": 0.24
+        "noul": 0.22
       },
       "op__invalidate_gdpr": {
         "type": "noul",
@@ -106,7 +111,7 @@
       },
       "op__push_channel_config": {
         "type": "noul",
-        "noul": 0.14
+        "noul": 0.15
       },
       "op__reprogram_send_schedule": {
         "type": "noul",
@@ -118,7 +123,7 @@
       },
       "op__rebaseline_reporting": {
         "type": "noul",
-        "noul": 0.84
+        "noul": 0.8
       },
       "op__update_retention_policy": {
         "type": "noul",
@@ -130,8 +135,8 @@
       }
     },
     "usage": {
-      "input_tokens": 6628,
-      "output_tokens": 588
+      "input_tokens": 6800,
+      "output_tokens": 615
     }
   }
 }

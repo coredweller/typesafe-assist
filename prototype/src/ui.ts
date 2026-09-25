@@ -3,7 +3,7 @@
  */
 
 import { isPositionMatched, preview } from "./diff.ts";
-import type { Interpretation } from "./interpret.ts";
+import { type Interpretation, UNCERTAIN_BAND } from "./interpret.ts";
 import type { BuiltQuestions } from "./questions.ts";
 import type {
   Bucket,
@@ -171,6 +171,12 @@ function readingsStrip(interp: Interpretation): HTMLElement {
     );
   };
 
+  // A reading inside the uncertainty band is a coin flip, not a decision —
+  // every yes/no tile says so rather than rounding it.
+  const yesNo = (p: number | null) =>
+    p === null ? "—" : Math.abs(p - 0.5) < UNCERTAIN_BAND ? "unclear" : p >= 0.5 ? "yes" : "no";
+  const sub = (p: number | null) => (p === null ? "" : fmt(p));
+
   add("theme", interp.theme?.choice ?? "—", interp.theme ? fmt(interp.theme.confidence) : "");
   add(
     "blast radius",
@@ -180,37 +186,11 @@ function readingsStrip(interp: Interpretation): HTMLElement {
   // Derived from the operation gates rather than asked. Shown next to the
   // asked one precisely so the two can be seen disagreeing.
   add("↳ derived", interp.derivedBlastRadius.replace(/_/g, " "), "computed");
-  add(
-    "apply in place",
-    interp.safeWhileLive === null
-      ? "—"
-      // A coin flip is not a decision; say so instead of rounding it.
-      : Math.abs(interp.safeWhileLive - 0.5) < 0.1
-      ? "unclear"
-      : interp.safeWhileLive >= 0.5
-      ? "yes"
-      : "no",
-    interp.safeWhileLive === null ? "" : fmt(interp.safeWhileLive),
-  );
-  add(
-    "approval stale",
-    interp.invalidatesApproval === null
-      ? "—"
-      : interp.invalidatesApproval >= 0.5
-      ? "yes"
-      : "no",
-    interp.invalidatesApproval === null ? "" : fmt(interp.invalidatesApproval),
-  );
-  add(
-    "consent conflict",
-    interp.consentConflict === null ? "—" : interp.consentConflict >= 0.5 ? "yes" : "no",
-    interp.consentConflict === null ? "" : fmt(interp.consentConflict),
-  );
-  add(
-    "new claim in copy",
-    interp.claimRisk === null ? "—" : interp.claimRisk >= 0.5 ? "yes" : "no",
-    interp.claimRisk === null ? "" : fmt(interp.claimRisk),
-  );
+  add("apply in place", yesNo(interp.safeWhileLive), sub(interp.safeWhileLive));
+  add("approval stale", yesNo(interp.invalidatesApproval), sub(interp.invalidatesApproval));
+  add("unverified sign-off", yesNo(interp.unverifiedSignoff), sub(interp.unverifiedSignoff));
+  add("consent conflict", yesNo(interp.consentConflict), sub(interp.consentConflict));
+  add("new claim in copy", yesNo(interp.claimRisk), sub(interp.claimRisk));
 
   return strip;
 }
@@ -238,6 +218,22 @@ export function renderAnswers(
   }
   host.append(mat);
 
+  // Claims, per copy edit. Shown under materiality so the two can be read
+  // across: an edit can be material without claiming anything.
+  const claimed = interp.changes.filter((v) => v.claim !== null);
+  if (claimed.length > 0) {
+    const cg = h(
+      "div",
+      { class: "qgroup" },
+      h("h4", {}, "new claim — one noul per copy edit"),
+    );
+    for (const v of claimed) {
+      const p = v.claim ?? 0;
+      cg.append(bar(p, p >= 0.5 ? "warn" : "", `${v.change.i}  ${v.change.path}`));
+    }
+    host.append(cg);
+  }
+
   // Array element identity, when the diff matched by position.
   if (interp.identities.length > 0) {
     const idg = h(
@@ -247,7 +243,8 @@ export function renderAnswers(
     );
     for (const v of interp.identities) {
       const label = `${v.target.arrayPath}[${v.target.afterIndex}] ← ` +
-        (v.resolvedTo === null ? "new entry" : `was index ${v.resolvedTo}`);
+        (v.resolvedTo === null ? "new entry" : `was index ${v.resolvedTo}`) +
+        (v.reassigned ? "  (reassigned)" : "");
       idg.append(bar(v.confidence, v.moved ? "warn" : "hit", label));
     }
     host.append(idg);

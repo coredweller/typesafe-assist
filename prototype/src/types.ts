@@ -100,8 +100,8 @@ export interface Owner {
 }
 
 /**
- * A send window. Deliberately has NO stable id — this is what makes
- * scenario 3 (reorder vs edit) genuinely ambiguous to a structural differ.
+ * A send window. Deliberately has NO stable id — this is what makes the
+ * schedule scenario (reorder vs edit) genuinely ambiguous to a structural differ.
  */
 export interface SendWindow {
   days: string[];
@@ -310,5 +310,11 @@ export interface Scenario {
   blurb: string;
   /** What this scenario proves that a diff tool alone cannot do. */
   proves: string;
+  /**
+   * The version this revision is applied to. Omitted means the shared
+   * `scheduled` BEFORE; the exclusion pair supplies a live one so the same
+   * diff can be judged against two different states.
+   */
+  before?: Campaign;
   after: Campaign;
 }

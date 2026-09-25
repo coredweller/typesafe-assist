@@ -46,6 +46,8 @@ export interface ChangeVerdict {
   change: Change;
   probability: number;
   material: boolean;
+  /** Per-edit claim reading; only copy fields are asked. */
+  claim: number | null;
 }
 
 export interface IdentityVerdict {
@@ -55,6 +57,53 @@ export interface IdentityVerdict {
   confidence: number;
   /** True when identity differs from naive position matching. */
   moved: boolean;
+  /** True when the one-to-one rule overrode Jev's own choice. */
+  reassigned: boolean;
+}
+
+/**
+ * Each identity question is answered without sight of the others, so two
+ * elements can both claim the same previous element. Observed on `schedule`:
+ * the new 07:30 window resolved to Friday's old slot in two runs of three,
+ * while Friday itself resolved there at .98. Identity is one-to-one, so the
+ * stronger claim keeps the slot and the weaker falls back to its next-best
+ * option that nobody else holds — "new" is always available.
+ */
+function enforceOneToOne(
+  verdicts: IdentityVerdict[],
+  answers: Map<IdentityVerdict, ChoiceAnswer>,
+): void {
+  const byArray = Map.groupBy(verdicts, (v) => v.target.arrayPath);
+  for (const group of byArray.values()) {
+    for (let pass = 0; pass < group.length; pass++) {
+      const claims = Map.groupBy(
+        group.filter((v) => v.resolvedTo !== null),
+        (v) => v.resolvedTo as number,
+      );
+      const clash = [...claims].find(([, vs]) => vs.length > 1);
+      if (!clash) break;
+
+      const [index, claimants] = clash;
+      const probOf = (v: IdentityVerdict, opt: string) =>
+        answers.get(v)?.probabilities[opt] ?? 0;
+      claimants.sort((a, b) => probOf(b, String(index)) - probOf(a, String(index)));
+
+      for (const loser of claimants.slice(1)) {
+        const held = new Set(
+          group.filter((v) => v !== loser && v.resolvedTo !== null)
+            .map((v) => String(v.resolvedTo)),
+        );
+        const [opt, p] = Object.entries(answers.get(loser)?.probabilities ?? {})
+          .filter(([o]) => !held.has(o))
+          .sort((a, b) => b[1] - a[1])[0] ?? [OPTION_NONE, 0];
+        loser.resolvedTo = opt === OPTION_NONE ? null : Number.parseInt(opt, 10);
+        loser.confidence = p;
+        loser.moved = loser.resolvedTo !== null &&
+          loser.resolvedTo !== loser.target.afterIndex;
+        loser.reassigned = true;
+      }
+    }
+  }
 }
 
 export interface Interpretation {
@@ -73,6 +122,7 @@ export interface Interpretation {
   invalidatesApproval: number | null;
   consentConflict: number | null;
   claimRisk: number | null;
+  unverifiedSignoff: number | null;
   /** Consistency notes produced here, not by the model. */
   flags: string[];
 }
@@ -101,26 +151,36 @@ export function interpret(
   // --- per-change materiality --------------------------------------------
   const changes: ChangeVerdict[] = built.changes.map((change) => {
     const p = noulOf(response, `material__${change.i}`) ?? 0;
-    return { change, probability: p, material: p >= thresholds.low };
+    return {
+      change,
+      probability: p,
+      material: p >= thresholds.low,
+      claim: noulOf(response, `claim__${change.i}`),
+    };
   });
 
   // --- array element identity --------------------------------------------
+  const identityAnswers = new Map<IdentityVerdict, ChoiceAnswer>();
   const identities: IdentityVerdict[] = built.identities.map((target) => {
     const answer = choiceOf(response, target.key);
     if (!answer) {
-      return { target, resolvedTo: null, confidence: 0, moved: false };
+      return { target, resolvedTo: null, confidence: 0, moved: false, reassigned: false };
     }
     const resolvedTo = answer.choice === OPTION_NONE
       ? null
       : Number.parseInt(answer.choice, 10);
     const valid = resolvedTo !== null && Number.isFinite(resolvedTo);
-    return {
+    const verdict: IdentityVerdict = {
       target,
       resolvedTo: valid ? resolvedTo : null,
       confidence: answer.confidence,
       moved: valid && resolvedTo !== target.afterIndex,
+      reassigned: false,
     };
+    identityAnswers.set(verdict, answer);
+    return verdict;
   });
+  enforceOneToOne(identities, identityAnswers);
 
   // --- operations ---------------------------------------------------------
   const operations: OperationResult[] = OPERATIONS.map((op) => {
@@ -133,6 +193,7 @@ export function interpret(
   const invalidatesApproval = noulOf(response, "invalidates_approval");
   const consentConflict = noulOf(response, "consent_conflict");
   const claimRisk = noulOf(response, "claim_risk");
+  const unverifiedSignoff = noulOf(response, "unverified_signoff");
 
   // --- blast radius, derived ----------------------------------------------
   // Take the outermost boundary crossed by any operation that cleared the
@@ -160,7 +221,10 @@ export function interpret(
     }
   }
 
-  if (claimRisk !== null && claimRisk >= thresholds.high) {
+  // Either reading is enough: the global one sees the copy as a whole, the
+  // per-edit ones each see a single change.
+  const perEditClaim = Math.max(0, ...changes.map((c) => c.claim ?? 0));
+  if (Math.max(claimRisk ?? 0, perEditClaim) >= thresholds.high) {
     const legal = operations.find((o) => o.key === "op__legal_recheck");
     if (legal && legal.bucket !== "required") {
       flags.push(
@@ -193,6 +257,25 @@ export function interpret(
       `This revision falls outside a completed approval or review ` +
         `(${invalidatesApproval.toFixed(2)}). Launch is gated until it is ` +
         `obtained again.`,
+    );
+  }
+
+  if (unverifiedSignoff !== null && unverifiedSignoff >= thresholds.low) {
+    // Observed on `budget`: the self-signed finance approval reads .87 here,
+    // while finance_approval — asked separately — drops from .95 to .47,
+    // because the record now *says* approved. Same shape as the consent/GDPR
+    // check above: the relational reading wins and the gap is named.
+    const regated = operations.some(
+      (o) => o.reach === "gating" && o.bucket === "required",
+    );
+    flags.push(
+      `A sign-off or review record was created or refreshed without evidence ` +
+        `of an independent reviewer (${unverifiedSignoff.toFixed(2)}). Treat it ` +
+        `as not obtained` +
+        (regated
+          ? "."
+          : ` — and no approval or review operation cleared the Required gate, ` +
+            `so re-raise it manually.`),
     );
   }
 
@@ -231,12 +314,39 @@ export function interpret(
     }
   }
 
+  // Every change graded cosmetic, yet an operation still cleared a gate. This
+  // is the `noise` case: an em dash in the campaign name reads as nothing per
+  // field, but the CRM holds that name. Both answers are defensible, and they
+  // were produced independently, so the disagreement is named, not resolved.
+  const gatedOps = operations.filter((o) => o.bucket !== "skip");
+  if (
+    changes.length && gatedOps.length &&
+    changes.every((c) => c.probability < thresholds.low)
+  ) {
+    flags.push(
+      `No change was graded material, yet ${
+        gatedOps.map((o) => `${o.label} (${o.probability.toFixed(2)})`).join(", ")
+      } cleared a gate. Per-field grading and the operation gates disagree — ` +
+        `check what the operation keys off.`,
+    );
+  }
+
   const movedCount = identities.filter((v) => v.moved).length;
   if (movedCount > 0) {
     flags.push(
       `${movedCount} array element${movedCount === 1 ? "" : "s"} shifted ` +
         `position. The diff reports these as edits; Jev resolved them as the ` +
         `same entries moved. Treat the affected change rows as suspect.`,
+    );
+  }
+
+  for (const v of identities.filter((v) => v.reassigned)) {
+    flags.push(
+      `${v.target.arrayPath}[${v.target.afterIndex}] claimed a previous element ` +
+        `that another element holds more strongly. Identity is one-to-one, so ` +
+        `it was reassigned to ${
+          v.resolvedTo === null ? "a new entry" : `index ${v.resolvedTo}`
+        } (${v.confidence.toFixed(2)}) — a constraint enforced here, not by Jev.`,
     );
   }
 
@@ -251,6 +361,7 @@ export function interpret(
     invalidatesApproval,
     consentConflict,
     claimRisk,
+    unverifiedSignoff,
     flags,
   };
 }

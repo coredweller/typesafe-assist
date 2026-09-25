@@ -1,84 +1,89 @@
 {
   "scenario": "integration",
-  "recorded_at": "2026-09-24T03:41:51.701Z",
+  "recorded_at": "2026-09-24T04:27:27.282Z",
   "model": "jev-latest",
   "changes": 6,
-  "questions": 26,
+  "questions": 27,
   "state_bytes": 6644,
-  "request_bytes": 20302,
-  "latency_ms": 125,
+  "request_bytes": 21212,
+  "latency_ms": 172,
   "usage": {
-    "input_tokens": 6864,
-    "output_tokens": 622
+    "input_tokens": 7050,
+    "output_tokens": 649
   },
   "response": {
     "model": "jev-1.13.0",
     "answers": {
       "material__0": {
         "type": "noul",
-        "noul": 0.9
+        "noul": 0.93
       },
       "material__1": {
         "type": "noul",
-        "noul": 0.84
+        "noul": 0.96
       },
       "material__2": {
         "type": "noul",
-        "noul": 0.46
+        "noul": 0.77
       },
       "material__3": {
         "type": "noul",
-        "noul": 0.91
+        "noul": 0.94
       },
       "material__4": {
         "type": "noul",
-        "noul": 0.73
+        "noul": 0.85
       },
       "material__5": {
         "type": "noul",
-        "noul": 0.92
+        "noul": 0.93
       },
       "theme": {
         "type": "choice",
         "choice": "integration",
         "confidence": 1,
         "probabilities": {
-          "schedule": 0,
-          "integration": 1,
-          "compliance": 0,
+          "delivery": 0,
           "targeting": 0,
           "budget": 0,
+          "integration": 1,
+          "schedule": 0,
           "creative": 0,
+          "compliance": 0,
           "metadata": 0
         }
       },
       "blast_radius": {
         "type": "choice",
         "choice": "external_platforms",
-        "confidence": 0.54,
+        "confidence": 0.55,
         "probabilities": {
           "none": 0,
-          "full_relaunch": 0.01,
-          "external_platforms": 0.65,
+          "downstream_consumers": 0.34,
           "this_record": 0,
-          "downstream_consumers": 0.34
+          "full_relaunch": 0.01,
+          "external_platforms": 0.65
         }
       },
       "safe_while_live": {
         "type": "noul",
-        "noul": 0.46
+        "noul": 0.43
       },
       "invalidates_approval": {
         "type": "noul",
-        "noul": 0.6
+        "noul": 0.58
+      },
+      "unverified_signoff": {
+        "type": "noul",
+        "noul": 0.14
       },
       "consent_conflict": {
         "type": "noul",
-        "noul": 0.24
+        "noul": 0.22
       },
       "claim_risk": {
         "type": "noul",
-        "noul": 0.24
+        "noul": 0.18
       },
       "op__resync_ad_budgets": {
         "type": "noul",
@@ -98,11 +103,11 @@
       },
       "op__regenerate_utm": {
         "type": "noul",
-        "noul": 0.14
+        "noul": 0.15
       },
       "op__recompute_forecast": {
         "type": "noul",
-        "noul": 0.52
+        "noul": 0.49
       },
       "op__finance_approval": {
         "type": "noul",
@@ -110,11 +115,11 @@
       },
       "op__invalidate_gdpr": {
         "type": "noul",
-        "noul": 0.19
+        "noul": 0.18
       },
       "op__push_channel_config": {
         "type": "noul",
-        "noul": 0.88
+        "noul": 0.86
       },
       "op__reprogram_send_schedule": {
         "type": "noul",
@@ -130,7 +135,7 @@
       },
       "op__update_retention_policy": {
         "type": "noul",
-        "noul": 0.08
+        "noul": 0.07
       },
       "op__halt_delivery": {
         "type": "noul",
@@ -138,8 +143,8 @@
       }
     },
     "usage": {
-      "input_tokens": 6864,
-      "output_tokens": 622
+      "input_tokens": 7050,
+      "output_tokens": 649
     }
   }
 }

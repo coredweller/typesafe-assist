@@ -2,11 +2,10 @@
  * Entry point. Owns all mutable state; everything else is a pure function.
  */
 
-import { BEFORE } from "./campaign.ts";
 import { diffCampaign } from "./diff.ts";
 import { DEFAULT_THRESHOLDS, type Interpretation, interpret } from "./interpret.ts";
 import { type BuiltQuestions, buildRequest } from "./questions.ts";
-import { SCENARIOS, scenarioById } from "./scenarios.ts";
+import { beforeOf, SCENARIOS, scenarioById } from "./scenarios.ts";
 import {
   renderAnswers,
   renderDiff,
@@ -33,6 +32,7 @@ const els = {
   blurb: must<HTMLParagraphElement>("#blurb"),
   proves: must<HTMLDivElement>("#proves"),
   beforeJson: must<HTMLPreElement>("#before-json"),
+  beforeLabel: must<HTMLSpanElement>("#before-label"),
   afterJson: must<HTMLTextAreaElement>("#after-json"),
   jsonState: must<HTMLSpanElement>("#json-state"),
   diffTable: must<HTMLTableElement>("#diff-table"),
@@ -50,6 +50,8 @@ const els = {
 
 interface State {
   scenarioId: string;
+  /** Fixed per scenario; only the After pane is editable. */
+  before: Campaign;
   after: Campaign | null;
   changes: Change[];
   request: SystemOneRequest | null;
@@ -62,6 +64,7 @@ interface State {
 
 const state: State = {
   scenarioId: SCENARIOS[0].id,
+  before: beforeOf(SCENARIOS[0]),
   after: null,
   changes: [],
   request: null,
@@ -94,10 +97,10 @@ function recompute(): void {
     return;
   }
 
-  state.changes = diffCampaign(BEFORE, parsed);
+  state.changes = diffCampaign(state.before, parsed);
   renderDiff(els.diffTable, els.diffCount, els.diffNote, state.changes);
 
-  const { request, built } = buildRequest(BEFORE, parsed, state.changes);
+  const { request, built } = buildRequest(state.before, parsed, state.changes);
   state.request = request;
   state.built = built;
 
@@ -143,6 +146,10 @@ function selectScenario(id: string): void {
   const s = scenarioById(id);
   renderScenarios(els.scenarios, SCENARIOS, id, selectScenario);
   renderScenarioText(els.blurb, els.proves, s);
+  state.before = beforeOf(s);
+  els.beforeJson.textContent = JSON.stringify(state.before, null, 2);
+  els.beforeLabel.textContent =
+    `version ${state.before.version} · ${state.before.status} · read only`;
   els.afterJson.value = JSON.stringify(s.after, null, 2);
   recompute();
 }
@@ -222,6 +229,5 @@ els.afterJson.addEventListener("input", () => {
 
 els.ask.addEventListener("click", () => void ask());
 
-els.beforeJson.textContent = JSON.stringify(BEFORE, null, 2);
 els.bundleStatus.textContent = `${SCENARIOS.length} scenarios loaded`;
 selectScenario(state.scenarioId);

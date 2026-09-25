@@ -1,15 +1,15 @@
 {
   "scenario": "noise",
-  "recorded_at": "2026-09-24T03:41:51.437Z",
+  "recorded_at": "2026-09-24T04:27:26.892Z",
   "model": "jev-latest",
   "changes": 4,
-  "questions": 24,
+  "questions": 25,
   "state_bytes": 6544,
-  "request_bytes": 19495,
-  "latency_ms": 190,
+  "request_bytes": 20327,
+  "latency_ms": 150,
   "usage": {
-    "input_tokens": 6576,
-    "output_tokens": 583
+    "input_tokens": 6748,
+    "output_tokens": 610
   },
   "response": {
     "model": "jev-1.13.0",
@@ -33,44 +33,49 @@
       "theme": {
         "type": "choice",
         "choice": "metadata",
-        "confidence": 1,
+        "confidence": 0.99,
         "probabilities": {
-          "targeting": 0,
           "compliance": 0,
-          "schedule": 0,
+          "delivery": 0,
           "budget": 0,
+          "schedule": 0,
           "metadata": 1,
           "integration": 0,
+          "targeting": 0,
           "creative": 0
         }
       },
       "blast_radius": {
         "type": "choice",
         "choice": "none",
-        "confidence": 0.59,
+        "confidence": 0.61,
         "probabilities": {
-          "external_platforms": 0.01,
-          "this_record": 0.2,
-          "downstream_consumers": 0.12,
+          "none": 0.69,
           "full_relaunch": 0,
-          "none": 0.67
+          "external_platforms": 0.01,
+          "downstream_consumers": 0.11,
+          "this_record": 0.19
         }
       },
       "safe_while_live": {
         "type": "noul",
-        "noul": 0.87
+        "noul": 0.86
       },
       "invalidates_approval": {
         "type": "noul",
-        "noul": 0.17
+        "noul": 0.16
+      },
+      "unverified_signoff": {
+        "type": "noul",
+        "noul": 0.11
       },
       "consent_conflict": {
         "type": "noul",
-        "noul": 0.18
+        "noul": 0.19
       },
       "claim_risk": {
         "type": "noul",
-        "noul": 0.14
+        "noul": 0.13
       },
       "op__resync_ad_budgets": {
         "type": "noul",
@@ -82,15 +87,15 @@
       },
       "op__rebuild_audience": {
         "type": "noul",
-        "noul": 0.13
+        "noul": 0.15
       },
       "op__crm_sync": {
         "type": "noul",
-        "noul": 0.78
+        "noul": 0.75
       },
       "op__regenerate_utm": {
         "type": "noul",
-        "noul": 0.08
+        "noul": 0.09
       },
       "op__recompute_forecast": {
         "type": "noul",
@@ -98,7 +103,7 @@
       },
       "op__finance_approval": {
         "type": "noul",
-        "noul": 0.07
+        "noul": 0.08
       },
       "op__invalidate_gdpr": {
         "type": "noul",
@@ -106,7 +111,7 @@
       },
       "op__push_channel_config": {
         "type": "noul",
-        "noul": 0.08
+        "noul": 0.09
       },
       "op__reprogram_send_schedule": {
         "type": "noul",
@@ -118,7 +123,7 @@
       },
       "op__rebaseline_reporting": {
         "type": "noul",
-        "noul": 0.13
+        "noul": 0.12
       },
       "op__update_retention_policy": {
         "type": "noul",
@@ -130,8 +135,8 @@
       }
     },
     "usage": {
-      "input_tokens": 6576,
-      "output_tokens": 583
+      "input_tokens": 6748,
+      "output_tokens": 610
     }
   }
 }
